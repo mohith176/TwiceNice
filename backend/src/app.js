@@ -25,6 +25,7 @@ app.use('/api/uploads', require('./routes/upload.routes'));
 app.use('/api/listings', require('./routes/listing.routes'));
 app.use('/api/favorites', require('./routes/favorite.routes'));
 app.use('/api/conversations', require('./routes/conversation.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
 
 // --- 404 fallback (no route matched) ---
 app.use((req, res) => {

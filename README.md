@@ -7,7 +7,7 @@
 
 - **Live app (frontend):** https://twice-nice.vercel.app
 - **Live API (backend):** https://twicenice.onrender.com
-- **Demo video:** _to be added_
+- **Demo video:** https://drive.google.com/file/d/10xDNRM9kkCnmEtpUzzbvMHQNFNlWvT1x/view?usp=sharing
 
 > Note: the backend runs on Render's free tier, which sleeps after ~15 minutes of inactivity. The first
 > request after a sleep can take ~30–50 seconds to wake the server; subsequent requests are fast.
@@ -82,12 +82,21 @@ The verbatim question-by-question record (with the exact options chosen) lives i
 - **Backend folder structure:** Layered — `routes / controllers / models / middleware / utils`.
 - **API testing/docs:** Postman collection + a `.http` request file (backend-first workflow).
 
+### Frontend & look-and-feel
+- **Framework:** **React + Vite** single-page app (plain JavaScript).
+- **Styling:** **Tailwind CSS** + **shadcn-style** components (the component code lives in the repo, not a
+  dependency).
+- **Aesthetic:** **Neobrutalism** — bold black borders, hard offset shadows, flat saturated/pastel fills,
+  chunky type (Space Grotesk headings), high contrast, minimal gradients.
+- **Currency:** **₹ INR**, formatted client-side; stored as a plain number.
+
 ### Authentication
 - **Strategy:** Roll-your-own **JWT** — bcrypt password hashing, a signed JWT issued on login.
 - **Token lifetime:** Single access token, **~7-day expiry** (no refresh tokens).
 - **Token storage (client):** `localStorage`, sent as `Authorization: Bearer <token>`.
 - **Login identifier:** **Email only** (no username, no social login).
-- **Password rules:** **Strict** — minimum length + uppercase + number + symbol.
+- **Password rules:** **Strict** — minimum **8 characters**, with an uppercase letter, a lowercase letter, a
+  number, and a symbol (enforced on the API and mirrored as a live checklist on signup/password-change).
 
 ### Users & profiles
 - **User fields:** name, email, password, **phone**, **location** (no avatar upload, no bio).
@@ -102,12 +111,18 @@ The verbatim question-by-question record (with the exact options chosen) lives i
 - **Plus:** condition (New / Like New / Good / Fair), location, quantity, and free-text **tags**.
 - **Images:** **multiple (up to 5)** per listing, first image is the cover.
 - **Price:** numeric in a single currency, with a **"negotiable"** flag and support for **"Free"** (price 0).
-- **Sold behavior:** sold listings **stay visible** with a SOLD badge (history preserved).
+- **Placement:** a listing must be assigned to a **subcategory** (a leaf), never a bare top-level category.
+- **Sold behavior:** sold listings **stay visible** with a SOLD badge (history preserved). Marking sold is a
+  **toggle** — the same control marks an item sold or relists it as active.
 
 ### Categories
 - **Structure:** 2-level hierarchy — **Category → Subcategory** (e-commerce style, without infinite nesting).
 - **Per-category attributes:** none — the shared **tags** field covers extra detail.
 - **Management:** **admin-managed** CRUD (stored in the DB), surfaced through a frontend admin page.
+- **Read endpoint:** `GET /api/categories` returns the **nested tree** — top-level categories each with a
+  `subcategories` array.
+- **Editing:** admin can **rename** a category; moving a category to a different parent is not supported.
+- **Deletion:** **blocked (409)** if the category still has subcategories or listings (no orphaning).
 
 ### Browse, search & discovery
 - **Search:** MongoDB **text index** over title + description + tags.
@@ -119,7 +134,9 @@ The verbatim question-by-question record (with the exact options chosen) lives i
 - **Mechanism:** **in-app messaging** — a buyer↔seller inbox with conversation threads.
 - **Delivery:** **polling** (frontend refetches every few seconds) — no WebSocket infra needed.
 - **Thread model:** one conversation per **(listing + buyer)** for clear per-item context.
-- **Notifications:** **unread count badge** in the navbar/inbox.
+- **Who starts:** only a **buyer** (non-seller) can open a thread; you can't message your own listing.
+- **Read state:** opening a conversation marks the other party's messages read (no separate endpoint).
+- **Notifications:** the navbar badge counts the **number of conversations with unread messages**.
 
 ### Admin & roles
 - **Role model:** an **`isAdmin` boolean** on the user.
@@ -131,8 +148,7 @@ The verbatim question-by-question record (with the exact options chosen) lives i
 - **Storage:** **Cloudinary** (free tier).
 - **Flow:** client → **backend (multer)** → Cloudinary (secrets stay server-side; we validate size/type).
 
-### Currency, extras, process
-- **Currency:** **₹ INR** (formatted client-side; stored as a plain number, swappable via a constant).
+### Extras & process
 - **Extra feature:** **Favorites / wishlist**.
 - **Seed data:** rich demo data (users, full category tree, ~20–30 listings, a sample conversation).
 - **Testing:** manual (Postman + UI), no automated test suite.

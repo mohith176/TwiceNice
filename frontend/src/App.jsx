@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import ListingDetail from './pages/ListingDetail';
 import ListingForm from './pages/ListingForm';
 import Dashboard from './pages/Dashboard';
+import PublicProfile from './pages/PublicProfile';
 
 // Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
@@ -18,7 +19,7 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path="listings/:id" element={<ListingDetail />} />
-        <Route path="u/:id" element={<Placeholder title="Public profile (F7)" />} />
+        <Route path="u/:id" element={<PublicProfile />} />
 
         <Route
           path="sell"

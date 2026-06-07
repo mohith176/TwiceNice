@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ListingDetail from './pages/ListingDetail';
 import ListingForm from './pages/ListingForm';
+import Dashboard from './pages/Dashboard';
 
 // Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
@@ -39,7 +40,7 @@ export default function App() {
           path="dashboard"
           element={
             <ProtectedRoute>
-              <Placeholder title="Dashboard (F6)" />
+              <Dashboard />
             </ProtectedRoute>
           }
         />

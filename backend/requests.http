@@ -1,0 +1,273 @@
+### TwiceNice API — REST Client request collection
+# Use with the VS Code "REST Client" extension (humao.rest-client).
+# Run "Login (demo user)" / "Login (admin)" first — their tokens are captured by
+# name and reused automatically by the requests below. Replace the @* ids with
+# real values from earlier responses where noted.
+
+@baseUrl = http://localhost:5000/api
+
+# Seed demo credentials (from `npm run seed -- --fresh`)
+@demoEmail = alice@twicenice.com
+@adminEmail = saikrishnamohith6@gmail.com
+@password = Password@123
+
+############################################
+# Health
+############################################
+
+### Health check
+GET {{baseUrl}}/health
+
+############################################
+# Auth
+############################################
+
+### Register a new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test.user@example.com",
+  "password": "Twice@2024",
+  "phone": "9123456789",
+  "location": "Hyderabad"
+}
+
+### Login (demo user) — token captured as login.response.body.token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{demoEmail}}",
+  "password": "{{password}}"
+}
+
+### Login (admin) — token captured as adminLogin.response.body.token
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{password}}"
+}
+
+### Current user
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{login.response.body.token}}
+
+############################################
+# Users / profile
+############################################
+
+### Update my profile
+PATCH {{baseUrl}}/users/me
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Alice V.",
+  "location": "Bengaluru"
+}
+
+### Change my password
+PATCH {{baseUrl}}/users/me/password
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "{{password}}",
+  "newPassword": "Twice@2025"
+}
+
+### Public profile (replace :id with a user id)
+@userId = REPLACE_WITH_USER_ID
+GET {{baseUrl}}/users/{{userId}}
+
+############################################
+# Categories
+############################################
+
+### Category tree (public)
+GET {{baseUrl}}/categories
+
+### Create a top-level category (admin)
+POST {{baseUrl}}/categories
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Collectibles"
+}
+
+### Create a subcategory (admin) — set parent to a top-level id
+@parentCategoryId = REPLACE_WITH_TOP_LEVEL_ID
+POST {{baseUrl}}/categories
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Coins",
+  "parent": "{{parentCategoryId}}"
+}
+
+### Rename a category (admin)
+@categoryId = REPLACE_WITH_CATEGORY_ID
+PATCH {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{adminLogin.response.body.token}}
+Content-Type: application/json
+
+{
+  "name": "Renamed"
+}
+
+### Delete a category (admin) — blocked if it has subcategories/listings
+DELETE {{baseUrl}}/categories/{{categoryId}}
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+############################################
+# Uploads (multipart) — returns Cloudinary URLs
+############################################
+
+### Upload up to 5 images (field name: images). Put real files next to this file.
+POST {{baseUrl}}/uploads
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: multipart/form-data; boundary=----TwiceNiceBoundary
+
+------TwiceNiceBoundary
+Content-Disposition: form-data; name="images"; filename="photo.png"
+Content-Type: image/png
+
+< ./photo.png
+------TwiceNiceBoundary--
+
+############################################
+# Listings
+############################################
+
+### Browse (with filters/sort/pagination)
+GET {{baseUrl}}/listings?q=&category=&minPrice=&maxPrice=&condition=&location=&hideSold=false&sort=new&page=1&limit=12
+
+### Browse — keyword search (relevance)
+GET {{baseUrl}}/listings?q=laptop
+
+### Browse — price range + condition + hide sold
+GET {{baseUrl}}/listings?minPrice=1000&maxPrice=50000&condition=Good&hideSold=true&sort=price_asc
+
+### My listings (dashboard)
+GET {{baseUrl}}/listings/mine
+Authorization: Bearer {{login.response.body.token}}
+
+### Create a listing — set category to a real subcategory id
+@subcategoryId = REPLACE_WITH_SUBCATEGORY_ID
+POST {{baseUrl}}/listings
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "title": "Mountain Bike",
+  "description": "Lightly used hardtail, great condition.",
+  "price": 8000,
+  "negotiable": true,
+  "category": "{{subcategoryId}}",
+  "condition": "Good",
+  "location": "Hyderabad",
+  "quantity": 1,
+  "tags": ["cycle", "mtb"],
+  "images": ["https://res.cloudinary.com/demo/image/upload/sample.jpg"]
+}
+
+### Get one listing
+@listingId = REPLACE_WITH_LISTING_ID
+GET {{baseUrl}}/listings/{{listingId}}
+
+### Update a listing (owner only)
+PATCH {{baseUrl}}/listings/{{listingId}}
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "price": 7500
+}
+
+### Toggle sold (owner only)
+PATCH {{baseUrl}}/listings/{{listingId}}/sold
+Authorization: Bearer {{login.response.body.token}}
+
+### Delete a listing (owner only)
+DELETE {{baseUrl}}/listings/{{listingId}}
+Authorization: Bearer {{login.response.body.token}}
+
+############################################
+# Favorites
+############################################
+
+### My favorites
+GET {{baseUrl}}/favorites
+Authorization: Bearer {{login.response.body.token}}
+
+### Add a favorite
+POST {{baseUrl}}/favorites/{{listingId}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Remove a favorite
+DELETE {{baseUrl}}/favorites/{{listingId}}
+Authorization: Bearer {{login.response.body.token}}
+
+############################################
+# Conversations / messaging
+############################################
+
+### Start (or continue) a conversation about a listing
+POST {{baseUrl}}/conversations
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "listingId": "{{listingId}}",
+  "body": "Hi, is this still available?"
+}
+
+### My inbox
+GET {{baseUrl}}/conversations
+Authorization: Bearer {{login.response.body.token}}
+
+### Unread conversation count (navbar badge)
+GET {{baseUrl}}/conversations/unread-count
+Authorization: Bearer {{login.response.body.token}}
+
+### Messages in a conversation (marks the other party's messages read)
+@conversationId = REPLACE_WITH_CONVERSATION_ID
+GET {{baseUrl}}/conversations/{{conversationId}}/messages
+Authorization: Bearer {{login.response.body.token}}
+
+### Send a message
+POST {{baseUrl}}/conversations/{{conversationId}}/messages
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "body": "Great, can you do 26000?"
+}
+
+############################################
+# Admin
+############################################
+
+### List all users (admin)
+GET {{baseUrl}}/admin/users
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+### List all listings (admin)
+GET {{baseUrl}}/admin/listings
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+### Remove any listing (admin)
+DELETE {{baseUrl}}/admin/listings/{{listingId}}
+Authorization: Bearer {{adminLogin.response.body.token}}
+
+### Ban / unban a user (admin) — toggles
+PATCH {{baseUrl}}/admin/users/{{userId}}/ban
+Authorization: Bearer {{adminLogin.response.body.token}}

@@ -1,0 +1,395 @@
+{
+  "info": {
+    "name": "TwiceNice API",
+    "description": "Second-hand marketplace API. Run 'Auth > Login (demo)' and 'Auth > Login (admin)' first; their tokens are auto-saved to the {{token}} and {{adminToken}} collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "token", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "demoEmail", "value": "alice@twicenice.com" },
+    { "key": "adminEmail", "value": "saikrishnamohith6@gmail.com" },
+    { "key": "password", "value": "Password@123" },
+    { "key": "userId", "value": "" },
+    { "key": "categoryId", "value": "" },
+    { "key": "subcategoryId", "value": "" },
+    { "key": "listingId", "value": "" },
+    { "key": "conversationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "request": { "method": "GET", "url": "{{baseUrl}}/health" }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test.user@example.com\",\n  \"password\": \"Twice@2024\",\n  \"phone\": \"9123456789\",\n  \"location\": \"Hyderabad\"\n}" }
+          }
+        },
+        {
+          "name": "Login (demo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) { pm.collectionVariables.set('token', j.token); }",
+                  "if (j.user && j.user._id) { pm.collectionVariables.set('userId', j.user._id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"{{password}}\"\n}" }
+          }
+        },
+        {
+          "name": "Login (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) { pm.collectionVariables.set('adminToken', j.token); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{password}}\"\n}" }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Update my profile",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/users/me",
+            "body": { "mode": "raw", "raw": "{\n  \"location\": \"Bengaluru\"\n}" }
+          }
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/users/me/password",
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"{{password}}\",\n  \"newPassword\": \"Twice@2025\"\n}" }
+          }
+        },
+        {
+          "name": "Public profile",
+          "request": { "method": "GET", "url": "{{baseUrl}}/users/{{userId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Category tree",
+          "request": { "method": "GET", "url": "{{baseUrl}}/categories" }
+        },
+        {
+          "name": "Create top-level (admin)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/categories",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Collectibles\"\n}" }
+          }
+        },
+        {
+          "name": "Create subcategory (admin)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/categories",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Coins\",\n  \"parent\": \"{{categoryId}}\"\n}" }
+          }
+        },
+        {
+          "name": "Rename (admin)",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/categories/{{categoryId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Renamed\"\n}" }
+          }
+        },
+        {
+          "name": "Delete (admin)",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "url": "{{baseUrl}}/categories/{{categoryId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload images (multipart)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/uploads",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "images", "type": "file", "src": [] }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listings",
+      "item": [
+        {
+          "name": "Browse (all params)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/listings?sort=new&page=1&limit=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings"],
+              "query": [
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "subcategory", "value": "", "disabled": true },
+                { "key": "minPrice", "value": "", "disabled": true },
+                { "key": "maxPrice", "value": "", "disabled": true },
+                { "key": "condition", "value": "Good", "disabled": true },
+                { "key": "location", "value": "", "disabled": true },
+                { "key": "hideSold", "value": "true", "disabled": true },
+                { "key": "sort", "value": "new" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "My listings",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/listings/mine"
+          }
+        },
+        {
+          "name": "Create listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["var j = pm.response.json();", "if (j.listing && j.listing._id) { pm.collectionVariables.set('listingId', j.listing._id); }"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/listings",
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Mountain Bike\",\n  \"description\": \"Lightly used hardtail.\",\n  \"price\": 8000,\n  \"negotiable\": true,\n  \"category\": \"{{subcategoryId}}\",\n  \"condition\": \"Good\",\n  \"location\": \"Hyderabad\",\n  \"tags\": [\"cycle\", \"mtb\"],\n  \"images\": [\"https://res.cloudinary.com/demo/image/upload/sample.jpg\"]\n}" }
+          }
+        },
+        {
+          "name": "Get one",
+          "request": { "method": "GET", "url": "{{baseUrl}}/listings/{{listingId}}" }
+        },
+        {
+          "name": "Update (owner)",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/listings/{{listingId}}",
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 7500\n}" }
+          }
+        },
+        {
+          "name": "Toggle sold (owner)",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/listings/{{listingId}}/sold"
+          }
+        },
+        {
+          "name": "Delete (owner)",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/listings/{{listingId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "My favorites",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/favorites"
+          }
+        },
+        {
+          "name": "Add favorite",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/favorites/{{listingId}}"
+          }
+        },
+        {
+          "name": "Remove favorite",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/favorites/{{listingId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "Start conversation",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": ["var j = pm.response.json();", "if (j.conversation && j.conversation._id) { pm.collectionVariables.set('conversationId', j.conversation._id); }"] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/conversations",
+            "body": { "mode": "raw", "raw": "{\n  \"listingId\": \"{{listingId}}\",\n  \"body\": \"Hi, is this still available?\"\n}" }
+          }
+        },
+        {
+          "name": "Inbox",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/conversations"
+          }
+        },
+        {
+          "name": "Unread count",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/conversations/unread-count"
+          }
+        },
+        {
+          "name": "Messages (marks read)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "url": "{{baseUrl}}/conversations/{{conversationId}}/messages"
+          }
+        },
+        {
+          "name": "Send message",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/conversations/{{conversationId}}/messages",
+            "body": { "mode": "raw", "raw": "{\n  \"body\": \"Great, can you do 26000?\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "url": "{{baseUrl}}/admin/users"
+          }
+        },
+        {
+          "name": "List listings",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "url": "{{baseUrl}}/admin/listings"
+          }
+        },
+        {
+          "name": "Remove any listing",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "url": "{{baseUrl}}/admin/listings/{{listingId}}"
+          }
+        },
+        {
+          "name": "Ban / unban user",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminToken}}" }] },
+            "url": "{{baseUrl}}/admin/users/{{userId}}/ban"
+          }
+        }
+      ]
+    }
+  ]
+}

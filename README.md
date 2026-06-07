@@ -215,4 +215,35 @@ Backend (`backend/.env`):
 ---
 
 ## API overview
-_Endpoint reference is filled in as routes are built (see B-phase of the build plan)._
+Base path: `/api`. Auth is a Bearer JWT in the `Authorization` header. Ready-to-run request collections live
+in [backend/requests.http](backend/requests.http) (VS Code REST Client) and
+[backend/TwiceNice.postman_collection.json](backend/TwiceNice.postman_collection.json) (Postman).
+
+| Method | Endpoint | Auth | Purpose |
+|---|---|---|---|
+| GET | `/health` | — | Health check |
+| POST | `/auth/register` | — | Sign up |
+| POST | `/auth/login` | — | Log in (returns user + token) |
+| GET | `/auth/me` | user | Current user |
+| PATCH | `/users/me` | user | Edit own profile |
+| PATCH | `/users/me/password` | user | Change password |
+| GET | `/users/:id` | — | Public profile + that seller's listings |
+| GET | `/categories` | — | Category tree (top-level + subcategories) |
+| POST/PATCH/DELETE | `/categories[/:id]` | admin | Manage categories |
+| POST | `/uploads` | user | Upload up to 5 images → Cloudinary URLs |
+| GET | `/listings` | — | Browse: search, filters, sort, pagination |
+| GET | `/listings/mine` | user | My listings (dashboard) |
+| POST | `/listings` | user | Create a listing |
+| GET | `/listings/:id` | — | Listing detail |
+| PATCH/DELETE | `/listings/:id` | owner | Edit / delete own listing |
+| PATCH | `/listings/:id/sold` | owner | Toggle sold ↔ active |
+| GET | `/favorites` | user | My saved listings |
+| POST/DELETE | `/favorites/:listingId` | user | Add / remove a favorite |
+| POST | `/conversations` | user | Start/continue a thread about a listing |
+| GET | `/conversations` | user | Inbox (with unread counts) |
+| GET | `/conversations/unread-count` | user | Navbar unread badge |
+| GET | `/conversations/:id/messages` | participant | Thread messages (marks read) |
+| POST | `/conversations/:id/messages` | participant | Send a message |
+| GET | `/admin/users` · `/admin/listings` | admin | Moderation lists |
+| DELETE | `/admin/listings/:id` | admin | Remove any listing |
+| PATCH | `/admin/users/:id/ban` | admin | Ban / unban a user |

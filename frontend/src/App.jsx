@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Placeholder } from './components/Placeholder';
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 
@@ -10,7 +11,7 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<Placeholder title="Browse (F3)" />} />
+        <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path="listings/:id" element={<Placeholder title="Listing detail (F4)" />} />

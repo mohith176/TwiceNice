@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const Listing = require('../models/Listing');
 const asyncHandler = require('../utils/asyncHandler');
 
 // GET /api/categories  (public) — returns the 2-level tree:
@@ -65,8 +66,12 @@ exports.remove = asyncHandler(async (req, res) => {
     });
   }
 
-  // NOTE (B8): once the Listing model exists, also block deletion when listings
-  // reference this category.
+  const listingCount = await Listing.countDocuments({ category: category._id });
+  if (listingCount > 0) {
+    return res.status(409).json({
+      error: 'Cannot delete: listings still use this category.',
+    });
+  }
 
   await category.deleteOne();
   res.json({ message: 'Category deleted' });

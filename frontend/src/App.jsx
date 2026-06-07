@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Placeholder } from './components/Placeholder';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 // Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
@@ -9,8 +11,8 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Placeholder title="Browse (F3)" />} />
-        <Route path="login" element={<Placeholder title="Log in (F2)" />} />
-        <Route path="signup" element={<Placeholder title="Sign up (F2)" />} />
+        <Route path="login" element={<Login />} />
+        <Route path="signup" element={<Signup />} />
         <Route path="listings/:id" element={<Placeholder title="Listing detail (F4)" />} />
         <Route path="u/:id" element={<Placeholder title="Public profile (F7)" />} />
 

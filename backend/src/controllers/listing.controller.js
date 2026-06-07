@@ -1,5 +1,6 @@
 const Listing = require('../models/Listing');
 const Category = require('../models/Category');
+const Favorite = require('../models/Favorite');
 const asyncHandler = require('../utils/asyncHandler');
 
 // Loads a listing and verifies the current user owns it. On failure it writes the
@@ -181,6 +182,8 @@ exports.remove = asyncHandler(async (req, res) => {
   const listing = await loadOwnedListing(req, res);
   if (!listing) return;
   await listing.deleteOne();
+  // Remove any favorites pointing at this listing so wishlists stay clean.
+  await Favorite.deleteMany({ listing: listing._id });
   res.json({ message: 'Listing deleted' });
 });
 

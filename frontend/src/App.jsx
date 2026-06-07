@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { Placeholder } from './components/Placeholder';
+import { ScrollToTop } from './components/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -13,11 +13,13 @@ import Messages from './pages/Messages';
 import Favorites from './pages/Favorites';
 import Admin from './pages/Admin';
 import Settings from './pages/Settings';
+import NotFound from './pages/NotFound';
 
-// Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
@@ -90,8 +92,9 @@ export default function App() {
           }
         />
 
-        <Route path="*" element={<Placeholder title="404 — Page not found" />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }

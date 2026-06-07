@@ -6,8 +6,10 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { formatPrice } from '../lib/format';
 import { cn } from '../lib/utils';
+import { useToast } from '../context/ToastContext';
 
 export default function Dashboard() {
+  const toast = useToast();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('active');
@@ -29,8 +31,9 @@ export default function Dashboard() {
     try {
       const { data } = await api.patch(`/listings/${item._id}/sold`);
       setItems((prev) => prev.map((l) => (l._id === item._id ? { ...l, status: data.listing.status } : l)));
+      toast.success(data.listing.status === 'sold' ? 'Marked as sold' : 'Relisted as active');
     } catch (err) {
-      setError(apiError(err, 'Could not update status'));
+      toast.error(apiError(err, 'Could not update status'));
     }
   }
 
@@ -39,8 +42,9 @@ export default function Dashboard() {
     try {
       await api.delete(`/listings/${item._id}`);
       setItems((prev) => prev.filter((l) => l._id !== item._id));
+      toast.success('Listing deleted');
     } catch (err) {
-      setError(apiError(err, 'Could not delete listing'));
+      toast.error(apiError(err, 'Could not delete listing'));
     }
   }
 

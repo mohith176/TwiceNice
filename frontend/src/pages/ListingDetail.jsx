@@ -9,12 +9,14 @@ import { formatPrice, memberSince } from '../lib/format';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
+import { useToast } from '../context/ToastContext';
 
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthed } = useAuth();
   const { isFavorite, toggle } = useFavorites();
+  const toast = useToast();
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +67,7 @@ export default function ListingDetail() {
     if (!window.confirm('Delete this listing? This cannot be undone.')) return;
     try {
       await api.delete(`/listings/${listing._id}`);
+      toast.success('Listing deleted');
       navigate('/dashboard');
     } catch (err) {
       setError(apiError(err, 'Could not delete listing'));
@@ -75,6 +78,7 @@ export default function ListingDetail() {
     try {
       const { data } = await api.patch(`/listings/${listing._id}/sold`);
       setListing((l) => ({ ...l, status: data.listing.status }));
+      toast.success(data.listing.status === 'sold' ? 'Marked as sold' : 'Relisted as active');
     } catch (err) {
       setError(apiError(err, 'Could not update status'));
     }

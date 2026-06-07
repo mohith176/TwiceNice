@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const CONDITIONS = ['New', 'Like New', 'Good', 'Fair'];
 const selectClass =
@@ -18,6 +19,7 @@ export default function ListingForm() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
 
   const [categories, setCategories] = useState([]);
   const [topCat, setTopCat] = useState('');
@@ -148,9 +150,11 @@ export default function ListingForm() {
     try {
       if (isEdit) {
         await api.patch(`/listings/${id}`, payload);
+        toast.success('Listing updated');
         navigate(`/listings/${id}`);
       } else {
         const { data } = await api.post('/listings', payload);
+        toast.success('Listing published');
         navigate(`/listings/${data.listing._id}`);
       }
     } catch (err) {

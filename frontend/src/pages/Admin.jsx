@@ -8,6 +8,7 @@ import { Badge } from '../components/ui/badge';
 import { formatPrice } from '../lib/format';
 import { cn } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Admin() {
   const [tab, setTab] = useState('categories');
@@ -145,6 +146,7 @@ function CategoriesPanel() {
 
 /* ---------------- Listings ---------------- */
 function ListingsPanel() {
+  const toast = useToast();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -159,8 +161,9 @@ function ListingsPanel() {
     try {
       await api.delete(`/admin/listings/${l._id}`);
       setRows((r) => r.filter((x) => x._id !== l._id));
+      toast.success('Listing removed');
     } catch (e) {
-      setError(apiError(e));
+      toast.error(apiError(e));
     }
   }
 
@@ -195,6 +198,7 @@ function ListingsPanel() {
 /* ---------------- Users ---------------- */
 function UsersPanel() {
   const { user } = useAuth();
+  const toast = useToast();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -208,8 +212,9 @@ function UsersPanel() {
     try {
       const { data } = await api.patch(`/admin/users/${u._id}/ban`);
       setRows((r) => r.map((x) => (x._id === u._id ? data.user : x)));
+      toast.success(data.user.isBanned ? `${data.user.name} banned` : `${data.user.name} unbanned`);
     } catch (e) {
-      setError(apiError(e));
+      toast.error(apiError(e));
     }
   }
 

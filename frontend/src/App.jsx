@@ -12,6 +12,7 @@ import PublicProfile from './pages/PublicProfile';
 import Messages from './pages/Messages';
 import Favorites from './pages/Favorites';
 import Admin from './pages/Admin';
+import Settings from './pages/Settings';
 
 // Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
@@ -76,7 +77,7 @@ export default function App() {
           path="settings"
           element={
             <ProtectedRoute>
-              <Placeholder title="Settings (F11)" />
+              <Settings />
             </ProtectedRoute>
           }
         />

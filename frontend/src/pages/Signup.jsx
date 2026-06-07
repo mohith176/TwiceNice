@@ -6,15 +6,7 @@ import { apiError } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
-
-// Mirrors the backend's strict password policy so feedback is instant.
-const PW_RULES = [
-  { test: (p) => p.length >= 8, label: 'At least 8 characters' },
-  { test: (p) => /[A-Z]/.test(p), label: 'An uppercase letter' },
-  { test: (p) => /[a-z]/.test(p), label: 'A lowercase letter' },
-  { test: (p) => /[0-9]/.test(p), label: 'A number' },
-  { test: (p) => /[^A-Za-z0-9]/.test(p), label: 'A symbol' },
-];
+import { PW_RULES } from '../lib/passwordRules';
 
 export default function Signup() {
   const { register } = useAuth();

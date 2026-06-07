@@ -3,11 +3,14 @@
 > A modern, neobrutalist second-hand marketplace — list what you no longer need, find what someone else
 > let go of, and message sellers directly. A lightweight, friendlier alternative to Craigslist.
 
-**Status:** In active development (take-home build).
+**Status:** Live.
 
-- **Live frontend:** _to be added (Vercel)_
-- **Live backend:** _to be added (Render)_
+- **Live app (frontend):** https://twice-nice.vercel.app
+- **Live API (backend):** https://twicenice.onrender.com
 - **Demo video:** _to be added_
+
+> Note: the backend runs on Render's free tier, which sleeps after ~15 minutes of inactivity. The first
+> request after a sleep can take ~30–50 seconds to wake the server; subsequent requests are fast.
 
 ---
 
@@ -177,22 +180,40 @@ TwiceNice/
 │       ├── routes/         # Express routers
 │       ├── utils/          # helpers
 │       ├── app.js          # express app wiring
-│       └── server.js       # entry point
-├── frontend/           # React + Vite SPA (added in the frontend phase)
+│       ├── server.js       # entry point
+│       ├── seed.js         # demo-data seed script
+│       └── data/           # seed image URLs
+├── frontend/           # React + Vite SPA
+│   └── src/
+│       ├── components/     # Navbar, Layout, ListingCard, ui/ primitives
+│       ├── context/        # Auth, Favorites, Toast providers
+│       ├── pages/          # Home, ListingDetail, Dashboard, Messages, Admin, …
+│       ├── lib/            # api client, formatters
+│       ├── App.jsx         # routes
+│       └── main.jsx        # entry + providers
 └── README.md
 ```
 
 ---
 
 ## Local setup
-> Frontend instructions are added once the frontend phase begins.
+Run the backend and frontend in two terminals.
 
 ### Backend
 ```bash
 cd backend
 cp .env.example .env      # then fill in the values
 npm install
+npm run seed -- --fresh   # optional: populate demo data (users, categories, listings)
 npm run dev               # starts the API on http://localhost:5000
+```
+
+### Frontend
+```bash
+cd frontend
+cp .env.example .env      # defaults to http://localhost:5000/api
+npm install
+npm run dev               # starts the app on http://localhost:5173
 ```
 
 ---
@@ -209,8 +230,24 @@ Backend (`backend/.env`):
 | `CLOUDINARY_CLOUD_NAME` | Cloudinary account cloud name |
 | `CLOUDINARY_API_KEY` | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret |
-| `CLIENT_ORIGIN` | Allowed CORS origin (the frontend URL) |
+| `CLIENT_ORIGIN` | Allowed CORS origin (the frontend URL, no trailing slash) |
 | `ADMIN_EMAIL` | Email promoted to admin by the seed script |
+
+Frontend (`frontend/.env`):
+
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | Base URL of the backend API (e.g. `http://localhost:5000/api`, or the Render URL in production). Baked in at build time. |
+
+---
+
+## Deployment
+- **Backend → Render** (web service, root directory `backend`, build `npm install`, start `npm start`).
+  Set all backend env vars in the Render dashboard, with `CLIENT_ORIGIN` = the Vercel URL (no trailing slash).
+- **Frontend → Vercel** (root directory `frontend`, framework Vite). Set `VITE_API_URL` = the Render URL + `/api`,
+  then redeploy so it's baked into the build. `vercel.json` rewrites all routes to `index.html` for the SPA.
+- **Database → MongoDB Atlas**; add `0.0.0.0/0` to Network Access so Render can connect.
+- **Images → Cloudinary** (credentials in the backend env).
 
 ---
 

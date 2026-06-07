@@ -20,3 +20,13 @@ export function memberSince(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 }
+
+// Time for chat: clock if today, otherwise a short date.
+export function formatTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const sameDay = d.toDateString() === new Date().toDateString();
+  return sameDay
+    ? d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
+    : d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}

@@ -9,6 +9,7 @@ import ListingDetail from './pages/ListingDetail';
 import ListingForm from './pages/ListingForm';
 import Dashboard from './pages/Dashboard';
 import PublicProfile from './pages/PublicProfile';
+import Messages from './pages/Messages';
 
 // Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
@@ -49,7 +50,15 @@ export default function App() {
           path="messages"
           element={
             <ProtectedRoute>
-              <Placeholder title="Inbox (F8)" />
+              <Messages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="messages/:conversationId"
+          element={
+            <ProtectedRoute>
+              <Messages />
             </ProtectedRoute>
           }
         />

@@ -51,6 +51,8 @@ const listValidators = [
 
 router.get('/', listValidators, validate, listingController.list);
 router.post('/', protect, createValidators, validate, listingController.create);
+// "/mine" must be declared before "/:id" so it isn't captured as an id param.
+router.get('/mine', protect, listingController.mine);
 router.get('/:id', listingController.getOne);
 router.patch('/:id', protect, updateValidators, validate, listingController.update);
 router.delete('/:id', protect, listingController.remove);

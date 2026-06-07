@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Listing = require('../models/Listing');
 const asyncHandler = require('../utils/asyncHandler');
 
 // PATCH /api/users/me  (protected) — edit own profile fields.
@@ -46,5 +47,12 @@ exports.getPublicProfile = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }
-  res.json({ user });
+
+  // The seller's listings (active + sold), newest first. The frontend groups
+  // them into Active / Sold sections.
+  const listings = await Listing.find({ seller: user._id })
+    .sort({ createdAt: -1 })
+    .populate('category', 'name');
+
+  res.json({ user, listings });
 });

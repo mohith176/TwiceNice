@@ -127,6 +127,15 @@ exports.list = asyncHandler(async (req, res) => {
   res.json({ items, total, page, pages: Math.ceil(total / limit), limit });
 });
 
+// GET /api/listings/mine  (protected) — the current user's listings (all statuses),
+// newest first. Powers the dashboard's Active/Sold tabs.
+exports.mine = asyncHandler(async (req, res) => {
+  const items = await Listing.find({ seller: req.user._id })
+    .sort({ createdAt: -1 })
+    .populate('category', 'name');
+  res.json({ items });
+});
+
 // GET /api/listings/:id  (public) — full detail with seller + category breadcrumb.
 exports.getOne = asyncHandler(async (req, res) => {
   const listing = await Listing.findById(req.params.id)

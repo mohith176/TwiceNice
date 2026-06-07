@@ -65,6 +65,68 @@ exports.create = asyncHandler(async (req, res) => {
   res.status(201).json({ listing });
 });
 
+// GET /api/listings  (public) — browse with keyword search, filters, sort, pagination.
+// Query params: q, category (top-level id, expands to its subcategories),
+// subcategory (leaf id), minPrice, maxPrice, condition (comma-separated), location,
+// hideSold, sort (new|price_asc|price_desc|relevance), page, limit.
+exports.list = asyncHandler(async (req, res) => {
+  const { q, category, subcategory, minPrice, maxPrice, condition, location, hideSold } = req.query;
+
+  const filter = {};
+  if (q) filter.$text = { $search: q };
+
+  // Category: a subcategory matches directly; a top-level category expands to all
+  // of its subcategory ids (since listings always live in a subcategory).
+  if (subcategory) {
+    filter.category = subcategory;
+  } else if (category) {
+    const subs = await Category.find({ parent: category }).select('_id');
+    filter.category = { $in: subs.map((s) => s._id) };
+  }
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    filter.price = {};
+    if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
+    if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
+  }
+
+  if (condition) filter.condition = { $in: String(condition).split(',') };
+  if (location) filter.location = { $regex: String(location).trim(), $options: 'i' };
+
+  // Sold items are shown by default; hideSold=true restricts to active only.
+  if (hideSold === 'true') filter.status = 'active';
+
+  // Sort: relevance only makes sense with a keyword; otherwise newest-first.
+  const hasText = Boolean(q);
+  const sortParam = req.query.sort || (hasText ? 'relevance' : 'new');
+  let sortSpec;
+  switch (sortParam) {
+    case 'price_asc': sortSpec = { price: 1 }; break;
+    case 'price_desc': sortSpec = { price: -1 }; break;
+    case 'relevance': sortSpec = hasText ? { score: { $meta: 'textScore' } } : { createdAt: -1 }; break;
+    default: sortSpec = { createdAt: -1 };
+  }
+
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(48, Math.max(1, parseInt(req.query.limit, 10) || 12));
+  const skip = (page - 1) * limit;
+
+  // textScore can only be projected when a $text search is active.
+  const projection = hasText && sortParam === 'relevance' ? { score: { $meta: 'textScore' } } : undefined;
+
+  const [items, total] = await Promise.all([
+    Listing.find(filter, projection)
+      .sort(sortSpec)
+      .skip(skip)
+      .limit(limit)
+      .populate('seller', 'name location')
+      .populate('category', 'name'),
+    Listing.countDocuments(filter),
+  ]);
+
+  res.json({ items, total, page, pages: Math.ceil(total / limit), limit });
+});
+
 // GET /api/listings/:id  (public) — full detail with seller + category breadcrumb.
 exports.getOne = asyncHandler(async (req, res) => {
   const listing = await Listing.findById(req.params.id)

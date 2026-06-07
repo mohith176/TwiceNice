@@ -1,5 +1,5 @@
 const express = require('express');
-const { body } = require('express-validator');
+const { body, query } = require('express-validator');
 const validate = require('../middleware/validate');
 const protect = require('../middleware/auth');
 const Listing = require('../models/Listing');
@@ -38,6 +38,18 @@ const updateValidators = [
   body('images.*').optional().isString().trim().notEmpty(),
 ];
 
+const listValidators = [
+  query('sort').optional().isIn(['new', 'price_asc', 'price_desc', 'relevance']).withMessage('Invalid sort'),
+  query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
+  query('limit').optional().isInt({ min: 1, max: 48 }).withMessage('limit must be between 1 and 48'),
+  query('minPrice').optional().isFloat({ min: 0 }).withMessage('minPrice must be a non-negative number'),
+  query('maxPrice').optional().isFloat({ min: 0 }).withMessage('maxPrice must be a non-negative number'),
+  query('category').optional().isMongoId().withMessage('Invalid category id'),
+  query('subcategory').optional().isMongoId().withMessage('Invalid subcategory id'),
+  query('hideSold').optional().isBoolean().withMessage('hideSold must be true or false'),
+];
+
+router.get('/', listValidators, validate, listingController.list);
 router.post('/', protect, createValidators, validate, listingController.create);
 router.get('/:id', listingController.getOne);
 router.patch('/:id', protect, updateValidators, validate, listingController.update);

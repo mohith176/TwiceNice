@@ -10,6 +10,7 @@ import ListingForm from './pages/ListingForm';
 import Dashboard from './pages/Dashboard';
 import PublicProfile from './pages/PublicProfile';
 import Messages from './pages/Messages';
+import Favorites from './pages/Favorites';
 
 // Routes are wired now; each Placeholder is swapped for its real page in F2–F11.
 export default function App() {
@@ -66,7 +67,7 @@ export default function App() {
           path="favorites"
           element={
             <ProtectedRoute>
-              <Placeholder title="Favorites (F9)" />
+              <Favorites />
             </ProtectedRoute>
           }
         />
